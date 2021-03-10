@@ -8,6 +8,7 @@
 
 import UIKit
 
+
 // MARK: - BigImages: String
 
 enum BigImages: String {
@@ -16,20 +17,24 @@ enum BigImages: String {
     case seaLion = "https://d17h27t6h515a5.cloudfront.net/topher/2017/November/59fe511f_sealion/sealion.jpg"
 }
 
+
 // MARK: - ViewController: UIViewController
 
 class ViewController: UIViewController {
 
+    
     // MARK: Outlets
     
     @IBOutlet weak var photoView: UIImageView!
     @IBOutlet weak var activityView: UIActivityIndicatorView!
 
+    
     // MARK: Actions
     
     @IBAction func setTransparencyOfImage(sender: UISlider) {
         photoView.alpha = CGFloat(sender.value)
     }
+    
     
     // MARK: - Sync Download
     
@@ -51,6 +56,7 @@ class ViewController: UIViewController {
             self.activityView.stopAnimating()
         }
     }
+    
     
     // MARK: - Async Download
     
@@ -82,10 +88,33 @@ class ViewController: UIViewController {
         }
     }
     
+    
     // MARK: - Async Download (with Completion Handler)
     
     @IBAction func asynchronousDownload(sender: UIBarButtonItem) {
-        // TODO: finish implementation
-        print("TODO: asynchronousDownload")
+        
+        activityView.startAnimating()
+        
+        withBigImage { (image) in
+            self.photoView.image = image
+            self.activityView.stopAnimating()
+        }
     }
+    
+    
+    // This code downloads the huge image in a global queue and uses a completion closure.
+    func withBigImage(completionHandler handler: @escaping (_ image: UIImage) -> Void) {
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let url = URL(string: BigImages.whale.rawValue), let imgData = try? Data(contentsOf: url), let image = UIImage(data: imgData) {
+                
+                // all set and done, run the completion closure!
+                DispatchQueue.main.async {
+                    handler(image)
+                }
+            }
+        }
+        
+    }
+    
 }
